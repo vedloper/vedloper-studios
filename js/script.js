@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Mobile Navigation Toggle
     const mobileToggle = document.querySelector('.mobile-toggle');
     const mobileNav = document.querySelector('.mobile-nav');
     const mobileLinks = document.querySelectorAll('.mobile-link');
@@ -9,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNav.classList.toggle('active');
         if (mobileNav.classList.contains('active')) {
             toggleIcon.classList.replace('ph-list', 'ph-x');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            document.body.style.overflow = 'hidden'; 
         } else {
             toggleIcon.classList.replace('ph-x', 'ph-list');
             document.body.style.overflow = '';
@@ -25,8 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const allNavLinks = document.querySelectorAll('.nav-link, .mobile-link');
 
-    // Navbar scroll effect
+    allNavLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && (href === currentPath || (href.startsWith('index.html') && currentPath === 'index.html'))) {
+            link.style.color = 'var(--text-primary)';
+        }
+    });
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
@@ -35,10 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
             navbar.classList.remove('scrolled');
         }
     });
-
-    // Scroll Reveal Animation using IntersectionObserver
     const revealElements = document.querySelectorAll('.reveal');
-    
+
     const revealOptions = {
         threshold: 0.15,
         rootMargin: "0px 0px -50px 0px"
@@ -50,22 +54,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             entry.target.classList.add('active');
-            observer.unobserve(entry.target); // Only reveal once
+            observer.unobserve(entry.target); 
         });
     }, revealOptions);
 
     revealElements.forEach(el => {
         revealObserver.observe(el);
     });
-
-    // Hero Background Animation (Subtle Particle Grid)
     initHeroCanvas();
+    const devTrack = document.querySelector('.dev-scroll-track');
+    const devCards = document.querySelectorAll('.dev-card');
+
+    if (devTrack && devCards.length > 0) {
+        let activeIndex = 0;
+
+        function updateCarousel() {
+            devCards.forEach((card, index) => {
+                if (index === activeIndex) {
+                    card.style.setProperty('--card-scale', 1);
+                    card.style.setProperty('--card-opacity', 1);
+                } else {
+                    card.style.setProperty('--card-scale', 0.85);
+                    card.style.setProperty('--card-opacity', 0.3);
+                }
+            });
+            const cardWidth = 300;
+            const gap = 32;
+            const viewportCenter = window.innerWidth / 2;
+            const offset = viewportCenter - (cardWidth / 2) - (activeIndex * (cardWidth + gap));
+
+            devTrack.style.transform = `translateX(${offset}px)`;
+        }
+
+        devCards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                activeIndex = index;
+                updateCarousel();
+            });
+        });
+
+        window.addEventListener('resize', updateCarousel);
+        updateCarousel();
+    }
 });
 
 function initHeroCanvas() {
     const canvas = document.getElementById('hero-canvas');
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     let width, height;
     let particles = [];
@@ -118,13 +154,9 @@ function initHeroCanvas() {
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
-        
-        // Draw very subtle grid
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
         ctx.lineWidth = 1;
         const gridSize = 50;
-        
-        // Only draw grid if window is wide enough (desktop) to save performance
         if (width > 768) {
             for(let x = 0; x < width; x += gridSize) {
                 ctx.beginPath();
@@ -144,8 +176,6 @@ function initHeroCanvas() {
             particle.update();
             particle.draw();
         });
-
-        // Connect particles
         connectParticles();
 
         requestAnimationFrame(animate);
@@ -160,7 +190,6 @@ function initHeroCanvas() {
 
                 if (distance < 120) {
                     let opacity = 1 - (distance / 120);
-                    // Match the red accent color slightly
                     ctx.strokeStyle = `rgba(239, 68, 68, ${opacity * 0.15})`;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
